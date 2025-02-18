@@ -1,7 +1,6 @@
-// Import Firebase scripts
-importScripts("https://www.gstatic.com/firebasejs/10.5.2/firebase-app.js");
+importScripts("https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js");
 importScripts(
-  "https://www.gstatic.com/firebasejs/10.5.2/firebase-messaging.js"
+  "https://www.gstatic.com/firebasejs/8.10.0/firebase-messaging.js"
 );
 
 try {
@@ -22,14 +21,26 @@ try {
 
   // Get Messaging Instance
   const messaging = firebase.messaging();
-
-  // Handle background notifications
-  messaging.onBackgroundMessage((payload) => {
-    console.log("Received background message: ", payload);
-    self.registration.showNotification(payload.notification.title, {
+  self.addEventListener("push", function (event) {
+    const payload = event.data.json();
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
       body: payload.notification.body,
-      icon: payload.notification.icon || "/firebase-logo.png",
-    });
+    };
+
+    event.waitUntil(
+      self.registration.showNotification(notificationTitle, notificationOptions)
+    );
+  });
+
+  messaging.onBackgroundMessage((payload) => {
+    const notificationTitle = payload.notification.title;
+    const notificationOptions = {
+      body: payload.notification.body,
+      icon: payload.notification.image,
+    };
+
+    self.registration.showNotification(notificationTitle, notificationOptions);
   });
 } catch (err) {
   console.log("ERROR IN SW: ", err);
